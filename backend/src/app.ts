@@ -34,7 +34,7 @@ export default class App {
 		this.express.use(rateLimiter);
 		this.express.use(express.urlencoded({ extended: true }));
 		this.express.use(express.json());
-		this.express.use(cors({ credentials: true, origin: process.env.CORS_ORIGIN | 'http://localhost:3000' }));
+		this.express.use(cors({ credentials: true, origin: process.env.CORS_ORIGIN || 'http://localhost:3000' }));
 		this.express.use(helmet());
 		this.express.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 	}
