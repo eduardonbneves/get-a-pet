@@ -1,0 +1,102 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Get a Pet API",
+        "description": "This is an example API for pets adoption using Typescript, MongoDB, Redis, Express and auth with JWT"
+    },
+    "version": "1.0.0",
+    "paths": {
+        "/users/register": {
+            "post": {
+                "summary": "Create user",
+                "description": "This route must register a new user",
+                "tags": [
+                    "Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                            "examples": {
+                                "user": {
+                                    "value": {
+                                        "name": "Eduardo Neves",
+                                        "email": "eduardo@gmail.com",
+                                        "phone": "11999567620",
+                                        "password": "examplePassword@1",
+                                        "confirmPassword": "examplePassword@1"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User successfully registered and authenticated"
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "summary": "Logs user into the system",
+                "description": "",
+                "tags": [
+                    "Users"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/User"
+                            },
+                            "examples": {
+                                "user": {
+                                    "value": {
+                                        "email": "eduardo@gmail.com",
+                                        "password": "examplePassword@1"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully authenticated"
+                    },
+                    "401": {
+                        "description": "Invalid email or/and password"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "confirmPassword": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
