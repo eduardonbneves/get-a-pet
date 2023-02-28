@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { Request } from 'express';
+import fs from 'fs';
 import PasswordValidator from 'password-validator';
 import validator from 'validator';
 
@@ -61,7 +62,8 @@ export async function validateUserFields(body: Request['body'], user?: UserInter
 		name: user?.name,
 		email: user?.email,
 		phone: user?.phone,
-		password: user?.password
+		password: user?.password,
+		image: user?.image
 	};
 
 	let fields;
@@ -137,7 +139,7 @@ export async function validateUserFields(body: Request['body'], user?: UserInter
 			}
 		}
 	} else {
-		if (body.password) {
+		if (body.password || body.confirmPassword) {
 			if (body.password !== body.confirmPassword) {
 				errorResponse.push({ 'password fields': 'Password and confirmation password do not match' });
 			} else {
@@ -154,11 +156,25 @@ export async function validateUserFields(body: Request['body'], user?: UserInter
 				}
 			}
 		}
+
+		if (body.image) {
+
+			fs.unlink(process.env.IMAGES_DIR as string + 'users/' + user?.image, (error) => {
+				if (error) {
+					console.error(error);
+					return;
+				}
+			});
+
+			userEdited.image = body.image;
+		}
 	}
 
 	if (isEdit && errorResponse.length === 0) {
 
-		if (user?.name !== userEdited.name || user?.email !== userEdited.email || user?.phone !== userEdited.phone || user?.password !== userEdited.password) {
+		if (user?.name !== userEdited.name || user?.email !== userEdited.email
+			|| user?.phone !== userEdited.phone || user?.password !== userEdited.password
+			|| user?.image !== userEdited.image) {
 			return userEdited;
 		}
 

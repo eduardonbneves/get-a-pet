@@ -135,7 +135,16 @@ class UserController {
 
 		const user = await getUserByToken(req.headers.authorization as string);
 
-		const response = await validateUserFields(req.body, user);
+		const userToEdit = {
+			name: req.body.name,
+			email: req.body.email,
+			phone: req.body.phone,
+			password: req.body.password,
+			confirmPassword: req.body.confirmPassword,
+			image: req.file?.filename
+		};
+
+		const response = await validateUserFields(userToEdit, user);
 
 		if (!('name' in response)) {
 			return res.status(422).json({ errors: response });
