@@ -7,7 +7,7 @@ import { redisClient } from '..';
 
 import { createAccessToken, createRefreshToken } from '../helpers/create-user-token';
 import getUserByToken from '../helpers/get-user-by-token';
-import { existsEmptyFields, validateUserFields } from '../helpers/validate-user-fields';
+import { existsEmptyFields, validateUserFields, validatePassword } from '../helpers/validate-user-fields';
 import User, { UserInterface } from '../models/User';
 
 
@@ -109,6 +109,7 @@ class UserController {
 
 			currentUser.password = undefined;
 		} catch (error) {
+			console.log(error);
 			return res.status(400).json({ message: 'Invalid token' });
 		}
 
@@ -149,7 +150,7 @@ class UserController {
 			return res.status(200).json({ message: 'Updated successfully' });
 		} catch (error) {
 			console.error(error);
-			return res.status(500).json({ message: 'Error on user update' });
+			return res.status(500).json({ message: 'Error in user update' });
 		}
 	}
 
@@ -180,48 +181,80 @@ class UserController {
 
 	public async requestNewPassword(req: Request, res: Response): Promise<Response> {
 
-		// try {
+		try {
 
-		// 	const { email } = req.body;
+			const { email } = req.body;
 
-		// 	const user = await User.findOne({ email });
+			if (!email) {
+				return res.status(422).json({ message: 'Email required' });
+			}
 
-		// 	if (!user) {
-		// 		return res.status(400).json({ error: 'Invalid email' });
-		// 	}
+			const user = await User.findOne({ email });
 
-		// 	const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+			if (!validator.isEmail(email) || !user) {
+				return res.status(400).json({ message: 'Invalid email' });
+			}
 
-		// 	const transporter = nodemailer.createTransport({
-		// 		host: process.env.SMTP_HOST,
-		// 		port: process.env.SMTP_PORT,
-		// 		secure: false,
-		// 		auth: {
-		// 			user: process.env.SMTP_USER,
-		// 			pass: process.env.SMTP_PASSWORD
-		// 		}
-		// 	});
+			const token = createAccessToken(user, '1h');
 
-		// 	const mailOptions = {
-		// 		from: process.env.EMAIL_FROM,
-		// 		to: user.email,
-		// 		subject: 'Redefinir senha',
-		// 		html: `
-		// 	  <p>Olá ${user.name},</p>
-		// 	  <p>Recebemos uma solicitação para redefinir sua senha.</p>
-		// 	  <p>Clique no link abaixo para redefinir sua senha:</p>
-		// 	  <a href="${process.env.BASE_URL}/reset_password/${token}">Redefinir senha</a>
-		// 	`
-		// 	};
+			const transporter = nodemailer.createTransport({
+				host: process.env.SMTP_HOST,
+				port: process.env.SMTP_PORT as unknown as number,
+				secure: true,
+				auth: {
+					user: process.env.SMTP_USER,
+					pass: process.env.SMTP_PASSWORD
+				}
+			});
 
-		// 	await transporter.sendMail(mailOptions);
+			await transporter.sendMail({
+				from: `Get a Pet <no-reply.${process.env.SMTP_USER}>`,
+				replyTo: `no-reply.${process.env.SMTP_USER}`,
+				priority: 'high',
+				to: user.email,
+				subject: 'Redefinir senha',
+				html:
+					`
+				<p>Hello, ${user.name}!</p>
+				<p>We received a request to reset your password.</p>
+				<p>Click on the link below to reset your password:</p>
+				<a href="${process.env.BASE_URL || 'http://localhost:3333'}/reset_password/${token}">Reset Password</a>
+				<p>If you didn't request account recovery, please ignore this email. This link will expire in 1 hour.</p>
+				`
+			});
 
-		// 	return res.json({ message: 'E-mail enviado com sucesso.' });
-		// } catch (error) {
-		// 	console.log(error);
-		return res.status(500).json({ message: 'Erro ao enviar e-mail.' });
-		// }
+			return res.json({ message: 'Email successfully sent' });
+
+		} catch (error) {
+			console.log(error);
+			return res.status(500).json({ message: 'Error sending email' });
+		}
 	}
+
+	public async resetPassword(req: Request, res: Response): Promise<Response> {
+
+		const { password } = req.body;
+
+		const passwordInvalidations = validatePassword(password);
+
+		if (passwordInvalidations.length !== 0) {
+			return res.status(422).json({ errors: passwordInvalidations });
+		}
+
+		const user = await getUserByToken(req.headers.authorization as string);
+
+		user.password = password;
+
+		try {
+			await user.save();
+		} catch (error) {
+			console.log(error);
+			return res.status(500).json({ message: 'Error in password update' });
+		}
+
+		return res.json({ message: 'Password successfully changed' });
+	}
+
 }
 
 export default new UserController();

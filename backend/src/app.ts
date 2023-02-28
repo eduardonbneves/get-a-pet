@@ -23,15 +23,17 @@ export default class App {
 	constructor() {
 		this.express = express();
 		this.redisClient = createClient({
-			url: process.env.REDIS_URL || 'redis://localhost:6379'
+			url: process.env.REDIS_URL || 'redis://localhost:6379',
+			name: 'refresh-token'
 		});
+		this.redis();
+		this.database();
 		this.middlewares();
 		this.routes();
 		this.listen();
 	}
 
 	private middlewares(): void {
-		this.express.use(rateLimiter);
 		this.express.use(express.urlencoded({ extended: true }));
 		this.express.use(express.json());
 		this.express.use(cors({ credentials: true, origin: process.env.CORS_ORIGIN || 'http://localhost:3000' }));
@@ -46,6 +48,16 @@ export default class App {
 		});
 	}
 
+	private async redis(): Promise<void> {
+		try {
+			await this.redisClient.connect();
+			console.log('Connected to Redis');
+		} catch (error) {
+			console.error('Redis -', error);
+			process.exit(1);
+		}
+	}
+
 	private async database(): Promise<void> {
 		try {
 			mongoose.set('strictQuery', false);
@@ -57,19 +69,8 @@ export default class App {
 		}
 	}
 
-	private async redis(): Promise<void> {
-		try {
-			await this.redisClient.connect();
-			console.log('Connected to Redis');
-		} catch (error) {
-			console.error('Redis -', error);
-			process.exit(1);
-		}
-	}
 
 	private async listen(): Promise<void> {
-		await this.database();
-		await this.redis();
 		try {
 			this.express.listen(this.port, () => {
 				console.log(`API listening on port ${this.port}`);

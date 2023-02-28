@@ -4,13 +4,13 @@ import { redisClient } from '..';
 
 import { UserInterface } from '../models/User';
 
-export const createAccessToken = (user: UserInterface): string => {
+export const createAccessToken = (user: UserInterface, timeout?: string): string => {
 	const accessToken = jwt.sign(
 		{
 			id: user._id
 		},
 		process.env.JWT_SECRET as string,
-		{ expiresIn: process.env.ACCESS_TOKEN_DURATION || '20s' }
+		{ expiresIn: timeout || process.env.ACCESS_TOKEN_DURATION || '20s' }
 	);
 
 	return accessToken;
