@@ -5,6 +5,7 @@ import PasswordValidator from 'password-validator';
 import validator from 'validator';
 
 import User, { UserInterface } from '../models/User';
+import logger from './logger';
 
 export function existsEmptyFields(body: Request['body']): string[] {
 
@@ -161,7 +162,7 @@ export async function validateUserFields(body: Request['body'], user?: UserInter
 
 			fs.unlink(process.env.IMAGES_DIR as string + 'users/' + user?.image, (error) => {
 				if (error) {
-					console.error(error);
+					logger.error(error);
 					return;
 				}
 			});

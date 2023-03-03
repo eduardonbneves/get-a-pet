@@ -1,21 +1,22 @@
+import compression from 'compression';
 import cors from 'cors';
 import csurf from 'csurf';
 import dotenv from 'dotenv';
-import express, { Application, Request, Response } from 'express';
+import express, { Application, NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import { createClient, RedisClientType } from 'redis';
 import swaggerUI from 'swagger-ui-express';
 
 import checkEnv from './helpers/check-env';
-import { rateLimiter } from './helpers/rate-limiter';
+import logger from './helpers/logger';
 import userRoutes from './routes/userRoutes';
 import swaggerDocs from './swagger.json';
 
 dotenv.config();
 checkEnv();
 
-export default class App {
+export class App {
 	private express: Application;
 	private port = process.env.NODE_PORT|| 3333;
 	public redisClient: RedisClientType;
@@ -34,26 +35,35 @@ export default class App {
 	}
 
 	private middlewares(): void {
+		this.express.use(helmet());
+		this.express.use(cors({ credentials: true, origin: process.env.CORS_ORIGIN || 'http://localhost:3000' }));
+		this.express.use(compression());
 		this.express.use(express.urlencoded({ extended: true }));
 		this.express.use(express.json());
-		this.express.use(cors({ credentials: true, origin: process.env.CORS_ORIGIN || 'http://localhost:3000' }));
-		this.express.use(helmet());
 		this.express.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 	}
 
 	private routes(): void {
+		this.express.get('/test', (req, res) => {
+			res.status(200).json({ message: 'deu certo' });
+		});
 		this.express.use('/users', userRoutes);
 		this.express.use((_: Request, res: Response) => {
 			return res.status(404).json({ message: 'Route not found' });
+		});
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		this.express.use((error: Error, _: Request, res: Response, next: NextFunction) => {
+			logger.error(error);
+			return res.status(500).json({ message: error.message });
 		});
 	}
 
 	private async redis(): Promise<void> {
 		try {
 			await this.redisClient.connect();
-			console.log('Connected to Redis');
+			logger.info('Connected to Redis');
 		} catch (error) {
-			console.error('Redis -', error);
+			logger.error(error);
 			process.exit(1);
 		}
 	}
@@ -62,9 +72,9 @@ export default class App {
 		try {
 			mongoose.set('strictQuery', false);
 			await mongoose.connect(process.env.MONGO_URI as string);
-			console.log('Connected to MongoDB');
+			logger.info('Connected to MongoDB');
 		} catch (error) {
-			console.error('MongoDB -', error);
+			logger.error(error);
 			process.exit(1);
 		}
 	}
@@ -73,10 +83,10 @@ export default class App {
 	private async listen(): Promise<void> {
 		try {
 			this.express.listen(this.port, () => {
-				console.log(`API listening on port ${this.port}`);
+				logger.info(`API listening on port ${this.port}`);
 			});
 		} catch (error) {
-			console.error('Error starting Express server - ', error);
+			logger.error(error);
 		}
 
 	}

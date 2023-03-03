@@ -28,6 +28,7 @@ module.exports = {
     "object-curly-spacing": ["error", "always"],
     "semi-spacing": ["error", { "after": true }],
     "comma-spacing": ["error", { "after": true }],
+    "no-console": "error",
     'import-helpers/order-imports': [
       "warn",
       {

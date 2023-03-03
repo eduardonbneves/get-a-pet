@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
 import User, { UserInterface } from '../models/User';
+import logger from './logger';
 
 export const authUserByToken = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -27,7 +28,7 @@ export const authUserByToken = async (req: Request, res: Response, next: NextFun
 
 	} catch (error) {
 
-		console.log(error);
+		logger.error(error);
 
 		return res.status(400).json({ message: 'Invalid token' });
 

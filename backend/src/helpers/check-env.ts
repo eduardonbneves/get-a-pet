@@ -1,3 +1,5 @@
+import logger from './logger';
+
 export default function checkEnv(): void {
 	const requiredEnvs: string[] = [
 		'MONGO_URI',
@@ -7,7 +9,7 @@ export default function checkEnv(): void {
 
 	for (const env of requiredEnvs) {
 		if (!process.env[env]) {
-			console.log(`${env} environment variable not set`);
+			logger.error(`${env} environment variable not set`);
 			emptyEnvs.push(env);
 		}
 	}

@@ -20,4 +20,8 @@ router.post('/refresh_token', UserController.refreshToken);
 router.post('/forgot_password', rateLimiter, UserController.requestNewPassword);
 router.post('/reset_password', authUserByToken, UserController.resetPassword);
 
+router.get('/test', (req, res) => {
+	res.status(200).json({ message: 'deu certo' });
+});
+
 export default router;

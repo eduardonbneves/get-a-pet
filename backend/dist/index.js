@@ -1,8 +1,5 @@
-'use strict';
-function _interopRequireDefault(obj) {
-	return obj && obj.__esModule ? obj : { default: obj };
-}
-var _app = require('./app');
-var _app2 = _interopRequireDefault(_app);
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _app = require('./app');
 
-new (0, _app2.default)().getApp();
+const app = new (0, _app.App)();
+app.getApp();
+ const redisClient = app.getRedisClient(); exports.redisClient = redisClient;

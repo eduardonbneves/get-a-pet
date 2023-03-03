@@ -1,36 +1,45 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-var _mongoose = require('mongoose');
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _mongoose = require('mongoose');
+
+
+
+
+
+
+
+
+
+
+
 
 const Pet = new (0, _mongoose.Schema)(
 	{
 		name: {
 			type: String,
-			required: true,
+			required: true
 		},
 		birthdate: {
 			type: Date,
-			required: true,
+			required: true
 		},
 		weight: {
 			type: Number,
-			required: true,
+			required: true
 		},
 		color: {
 			type: String,
-			required: true,
+			required: true
 		},
 		images: {
 			type: Array,
-			required: true,
+			required: true
 		},
 		available: {
-			type: Boolean,
+			type: Boolean
 		},
 		user: Object,
-		adopter: Object,
+		adopter: Object
 	},
 	{ timestamps: true }
 );
 
-exports.default = _mongoose.model('Pet', Pet);
+exports. default = _mongoose.model('Pet', Pet);

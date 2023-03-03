@@ -7,6 +7,7 @@ import { redisClient } from '..';
 
 import { createAccessToken, createRefreshToken } from '../helpers/create-user-token';
 import getUserByToken from '../helpers/get-user-by-token';
+import logger from '../helpers/logger';
 import { existsEmptyFields, validateUserFields, validatePassword } from '../helpers/validate-user-fields';
 import User, { UserInterface } from '../models/User';
 
@@ -47,7 +48,7 @@ class UserController {
 				response
 			});
 		} catch (error) {
-			console.error(error);
+			logger.error(error);
 			return res.status(500).json({ message: 'Error registering user' });
 		}
 
@@ -109,7 +110,7 @@ class UserController {
 
 			currentUser.password = undefined;
 		} catch (error) {
-			console.log(error);
+			logger.error(error);
 			return res.status(400).json({ message: 'Invalid token' });
 		}
 
@@ -158,7 +159,7 @@ class UserController {
 
 			return res.status(200).json({ message: 'Updated successfully' });
 		} catch (error) {
-			console.error(error);
+			logger.error(error);
 			return res.status(500).json({ message: 'Error in user update' });
 		}
 	}
@@ -183,7 +184,7 @@ class UserController {
 
 			return res.status(200).json({ newAccessToken });
 		} catch (error) {
-			console.error(error);
+			logger.error(error);
 			return res.status(400).json({ message: 'Invalid refresh token' });
 		}
 	}
@@ -235,7 +236,7 @@ class UserController {
 			return res.json({ message: 'Email successfully sent' });
 
 		} catch (error) {
-			console.log(error);
+			logger.error(error);
 			return res.status(500).json({ message: 'Error sending email' });
 		}
 	}
@@ -257,7 +258,7 @@ class UserController {
 		try {
 			await user.save();
 		} catch (error) {
-			console.log(error);
+			logger.error(error);
 			return res.status(500).json({ message: 'Error in password update' });
 		}
 
