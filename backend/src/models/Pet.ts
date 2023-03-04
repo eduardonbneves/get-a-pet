@@ -19,7 +19,8 @@ const Pet = new Schema(
 		},
 		birthdate: {
 			type: Date,
-			required: true
+			required: true,
+			get: (value: Date) => value.toLocaleDateString(process.env.LOCALE || 'pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 		},
 		weight: {
 			type: Number,
@@ -43,3 +44,4 @@ const Pet = new Schema(
 );
 
 export default model<PetInterface>('Pet', Pet);
+export { PetInterface };

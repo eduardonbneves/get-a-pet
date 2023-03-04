@@ -8,9 +8,9 @@ import { redisClient } from '..';
 import { createAccessToken, createRefreshToken } from '../helpers/create-user-token';
 import getUserByToken from '../helpers/get-user-by-token';
 import logger from '../helpers/logger';
-import { existsEmptyFields, validateUserFields, validatePassword } from '../helpers/validate-user-fields';
+import { validateUserFields, validatePassword } from '../helpers/validate-user-fields';
+import { existsEmptyFields } from '../helpers/verify-empty-fields';
 import User, { UserInterface } from '../models/User';
-
 
 class UserController {
 
@@ -25,8 +25,8 @@ class UserController {
 		try {
 			const newUser = await new User({
 				name: req.body.name,
-				email: req.body.email,
-				phone: req.body.phone,
+				email: req.body.email.replaceAll(' ', ''),
+				phone: req.body.phone.replaceAll(' ', ''),
 				password: req.body.password
 			}).save();
 
@@ -57,8 +57,8 @@ class UserController {
 	public async login(req: Request, res: Response): Promise<Response> {
 
 		const login = {
-			email: req.body.email,
-			password: req.body.password
+			email: req.body.email.replaceAll(' ', ''),
+			password: req.body.password.replaceAll(' ', '')
 		};
 
 		// check empty fields
@@ -138,8 +138,8 @@ class UserController {
 
 		const userToEdit = {
 			name: req.body.name,
-			email: req.body.email,
-			phone: req.body.phone,
+			email: req.body.email.replaceAll(' ', ''),
+			phone: req.body.phone.replaceAll(' ', ''),
 			password: req.body.password,
 			confirmPassword: req.body.confirmPassword,
 			image: req.file?.filename
@@ -193,7 +193,7 @@ class UserController {
 
 		try {
 
-			const { email } = req.body;
+			const email = req.body.email.replaceAll(' ', '');
 
 			if (!email) {
 				return res.status(422).json({ message: 'Email required' });

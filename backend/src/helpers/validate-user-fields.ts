@@ -6,21 +6,9 @@ import validator from 'validator';
 
 import User, { UserInterface } from '../models/User';
 import logger from './logger';
+import { existsEmptyFields } from './verify-empty-fields';
 
-export function existsEmptyFields(body: Request['body']): string[] {
-
-	const emptyFields: string[] = [];
-	for (const [key, value] of Object.entries(body)) {
-		if (!value) {
-			emptyFields.push(key);
-		}
-	}
-
-	return emptyFields;
-
-}
-
-export function validateName(name: string): string[] {
+function validateName(name: string): string[] {
 
 	const validator = new PasswordValidator();
 
@@ -40,12 +28,13 @@ export function validatePassword(password: string): string[] {
 	const validator = new PasswordValidator();
 
 	validator
-		.is().min(10)
+		.is().min(6)
 		.is().max(128)
 		.has().uppercase()
 		.has().lowercase()
 		.has().symbols()
 		.has().digits()
+		.has().not().spaces()
 		.is().not().oneOf(['@Passw0rdd', 'Password@123']);
 
 	return validator.validate(password, { details: true }) as string[];
@@ -121,7 +110,7 @@ export async function validateUserFields(body: Request['body'], user?: UserInter
 	}
 
 	// validate phone
-	if (!validator.isMobilePhone(fields.phone, (process.env.PHONE_COUNTRY_CODE as validator.MobilePhoneLocale) || 'pt-BR')) {
+	if (!validator.isMobilePhone(fields.phone, (process.env.LOCALE as validator.MobilePhoneLocale) || 'pt-BR')) {
 		errorResponse.push({ phone: 'Invalid phone number' });
 	} else {
 		if (fields.phone !== user?.phone)

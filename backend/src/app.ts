@@ -10,6 +10,7 @@ import swaggerUI from 'swagger-ui-express';
 
 import checkEnv from './helpers/check-env';
 import logger from './helpers/logger';
+import petRoutes from './routes/petRoutes';
 import userRoutes from './routes/userRoutes';
 import swaggerDocs from './swagger.json';
 
@@ -48,6 +49,7 @@ export class App {
 			res.status(200).json({ message: 'deu certo' });
 		});
 		this.express.use('/users', userRoutes);
+		this.express.use('/pets', petRoutes);
 		this.express.use((_: Request, res: Response) => {
 			return res.status(404).json({ message: 'Route not found' });
 		});

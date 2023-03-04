@@ -25,7 +25,7 @@ export const createRefreshToken = async (user: UserInterface): Promise<string> =
 	{ expiresIn: process.env.REFRESH_TOKEN_DURATION || '1d' }
 	);
 
-	redisClient.set(`refreshToken.${user.id}`, refreshToken);
+	redisClient.set(`refreshToken.${user.id}`, refreshToken, { EX: 86400 });
 
 	return refreshToken;
 };
