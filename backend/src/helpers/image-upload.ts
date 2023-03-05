@@ -15,7 +15,7 @@ const imageStorage = multer.diskStorage({
 		cb(null, process.env.IMAGES_DIR as string + folder);
 	},
 	filename: (_, file, cb) => {
-		cb(null, Date.now() + path.extname(file.originalname));
+		cb(null, Date.now() + String(Math.floor(Math.random() * 1000)) + path.extname(file.originalname));
 	}
 });
 
