@@ -7,7 +7,6 @@ import getUserByToken from '../helpers/get-user-by-token';
 import logger from '../helpers/logger';
 import { validatePetFields } from '../helpers/validate-pet-fields';
 import Pet, { PetInterface } from '../models/Pet';
-import User from '../models/User';
 
 class PetController {
 
@@ -242,6 +241,8 @@ class PetController {
 
 		await Pet.findByIdAndUpdate(id, pet);
 
+		await redisClient.del('pet.getAll');
+
 		return res.status(200).json({ message: 'Scheduled visit with success. Enter contact with the pet owner.' });
 	}
 
@@ -269,6 +270,8 @@ class PetController {
 		pet.available = false;
 
 		await Pet.findByIdAndUpdate(id, pet);
+
+		await redisClient.del('pet.getAll');
 
 		return res.status(200).json({ message: 'Congratulations! The adoption cicle was finished with success' });
 	}
