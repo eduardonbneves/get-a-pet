@@ -3,7 +3,7 @@ import fs from 'fs';
 import PasswordValidator from 'password-validator';
 import validator from 'validator';
 
-import { PetInterface } from '../models/Pet';
+import Pet, { PetInterface } from '../models/Pet';
 import logger from './logger';
 import { existsEmptyFields } from './verify-empty-fields';
 
@@ -67,11 +67,11 @@ export async function validatePetFields(pet: Request['body'], uuidReq: string, p
 	}
 
 	// delete this pet photos
+	const dirPath = `${process.env.IMAGES_DIR}pets/`;
+
 	if (errorResponse.length > 0) {
+
 		if (!isEdit) {
-
-			const dirPath = `${process.env.IMAGES_DIR}pets/`;
-
 			fs.readdir(dirPath, (error, files) => {
 				if (error) logger.error(error);
 
@@ -79,7 +79,7 @@ export async function validatePetFields(pet: Request['body'], uuidReq: string, p
 					.filter(file => {
 						return file.includes(uuidReq);
 					})
-					.map(file => {
+					.forEach(file => {
 						fs.unlink(dirPath + file, error => {
 							if (error) {
 								logger.error(error);
@@ -89,8 +89,20 @@ export async function validatePetFields(pet: Request['body'], uuidReq: string, p
 					});
 			});
 		}
+
 	} else {
-		// apagar todas imagens antigas e colocar as novas
+
+		const petImages = await Pet.findById(petToCompare?.id).select('images');
+		const imagesToExclude = petImages?.images;
+
+		imagesToExclude?.forEach(image => {
+			fs.unlink(dirPath + image, error => {
+				if (error) {
+					logger.error(error);
+					return;
+				}
+			});
+		});
 	}
 
 	if (isEdit && errorResponse.length === 0) {

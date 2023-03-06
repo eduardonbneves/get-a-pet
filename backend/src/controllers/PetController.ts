@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import fs from 'fs';
 import { Types } from 'mongoose';
 
 import { redisClient } from '..';
@@ -141,6 +142,17 @@ class PetController {
 		}
 
 		await Pet.findByIdAndDelete(id);
+
+		const dirPath = `${process.env.IMAGES_DIR}pets/`;
+
+		pet.images.forEach(image => {
+			fs.unlink(dirPath + image, error => {
+				if (error) {
+					logger.error(error);
+					return;
+				}
+			});
+		});
 
 		await redisClient.del('pet.getAll');
 
