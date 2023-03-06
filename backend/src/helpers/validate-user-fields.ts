@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { Request } from 'express';
 import fs from 'fs';
 import PasswordValidator from 'password-validator';
+import path from 'path';
 import validator from 'validator';
 
 import User, { UserInterface } from '../models/User';
@@ -149,15 +150,51 @@ export async function validateUserFields(body: Request['body'], user?: UserInter
 
 		if (body.image) {
 
-			fs.unlink(process.env.IMAGES_DIR as string + 'users/' + user?.image, (error) => {
-				if (error) {
-					logger.error(error);
-					return;
-				}
+			const dirPath = `${process.env.IMAGES_DIR}users/${user?.id}/`;
+
+			fs.readdir(dirPath, (error, files) => {
+				if (error) logger.error(error);
+
+				// select all old images
+				let timestampCache = '0';
+				files.forEach(file => {
+					const timestamp = file.split('.')[1];
+
+					if (timestamp > timestampCache) {
+						timestampCache = timestamp;
+					}
+				});
+
+				// exclude all old images from user
+				files.forEach(file => {
+					const timestamp = file.split('.')[1];
+					if (timestampCache > timestamp) {
+						if (errorResponse.length === 0) {
+							fs.unlink(dirPath + file, (error) => {
+								if (error) {
+									logger.error(error);
+									return;
+								}
+							});
+						} else {
+							files.forEach(file => {
+								if (file !== user?.image) {
+									fs.unlink(dirPath + file, error => {
+										if (error) {
+											logger.error(error);
+											return;
+										}
+									});
+								}
+							});
+						}
+					}
+				});
 			});
 
 			userEdited.image = body.image;
 		}
+
 	}
 
 	if (isEdit && errorResponse.length === 0) {

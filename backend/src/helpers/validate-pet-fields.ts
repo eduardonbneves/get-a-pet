@@ -4,6 +4,7 @@ import PasswordValidator from 'password-validator';
 import validator from 'validator';
 
 import Pet, { PetInterface } from '../models/Pet';
+import logger from './logger';
 import { existsEmptyFields } from './verify-empty-fields';
 
 function validateName(name: string): string[] {
@@ -20,7 +21,7 @@ function validateName(name: string): string[] {
 
 }
 
-export async function validatePetFields(pet: Request['body'], petToCompare?: PetInterface) {
+export async function validatePetFields(pet: Request['body'], uuidReq: string, petToCompare?: PetInterface) {
 
 	const isEdit = !petToCompare ? false : true;
 
@@ -94,19 +95,34 @@ export async function validatePetFields(pet: Request['body'], petToCompare?: Pet
 	// if (isEdit && fields.name !== user?.name)
 	// 	userEdited.name = fields.name;
 
+	// delete this pet photos
+	if (errorResponse.length > 0) {
+		const dirPath = `${process.env.IMAGES_DIR}pets/`;
 
-	// 	if (body.image) {
+		fs.readdir(dirPath, (error, files) => {
+			if (error) logger.error(error);
 
-	// 		fs.unlink(process.env.IMAGES_DIR as string + 'users/' + user?.image, (error) => {
-	// 			if (error) {
-	// 				logger.error(error);
-	// 				return;
-	// 			}
-	// 		});
+			const images = files.filter(file => {
+				return file.includes(uuidReq);
+			});
 
-	// 		userEdited.image = body.image;
+			images.forEach(file => {
+				fs.unlink(dirPath + file, error => {
+					if (error) {
+						logger.error(error);
+						return;
+					}
+				});
+			});
+		});
+	}
+
+	// fs.unlink(process.env.IMAGES_DIR as string + 'users/' + user?.image, (error) => {
+	// 	if (error) {
+	// 		logger.error(error);
+	// 		return;
 	// 	}
-	// }
+	// });
 
 	// if (isEdit && errorResponse.length === 0) {
 

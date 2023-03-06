@@ -11,12 +11,6 @@ class PetController {
 
 	public async create(req: Request, res: Response): Promise<Response> {
 
-		// apagar fotos dos pets quando der erro
-
-		//e
-
-		// add redis na consulta
-
 		const pet = {
 			name: req.body.name,
 			birthdate: req.body.birthdate,
@@ -28,7 +22,7 @@ class PetController {
 		const available = true;
 
 		// validations
-		const errorResponse = await validatePetFields(pet) as [];
+		const errorResponse = await validatePetFields(pet, req.uuid as string) as [];
 
 		if (errorResponse.length !== 0) {
 			return res.status(422).json({ errors: errorResponse });
@@ -37,12 +31,11 @@ class PetController {
 		// get pet owner
 		const user = await getUserByToken(req.headers.authorization as string);
 
-
-		const imagesBody= pet.images as [];
+		const imagesBody = pet.images as [];
 		const imagesToBD: string[] = [];
 
 		imagesBody.map((image: Express.Multer.File) => {
-			imagesToBD.push(image.filename);
+			return imagesToBD.push(image.filename);
 		});
 
 		try {
@@ -63,6 +56,8 @@ class PetController {
 				}
 			}).save();
 
+			await redisClient.del('pet.getAll');
+
 			return res.status(201).json({
 				message: 'Pet successfully created',
 				pet: newPet
@@ -76,7 +71,18 @@ class PetController {
 
 	public async getAll(req: Request, res: Response): Promise<Response> {
 
+		const petsFromCache = await redisClient.get('pet.getAll');
+
+		if (petsFromCache) {
+
+			const pets = JSON.parse(petsFromCache);
+
+			return res.status(200).json({ pets: pets });
+		}
+
 		const pets = await Pet.find().sort('-createdAt');
+
+		await redisClient.set('pet.getAll', JSON.stringify(pets));
 
 		return res.status(200).json({ pets: pets });
 	}

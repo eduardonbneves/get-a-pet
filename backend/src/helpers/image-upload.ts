@@ -1,3 +1,4 @@
+import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
 
@@ -6,16 +7,27 @@ const imageStorage = multer.diskStorage({
 
 		let folder = '';
 
-		if (req.baseUrl.includes('users'))
-			folder = 'users';
-		else
-		if (req.baseUrl.includes('pets'))
-			folder = 'pets';
+		if (req.baseUrl.includes('users')) {
 
-		cb(null, process.env.IMAGES_DIR as string + folder);
+			folder = path.join(process.env.IMAGES_DIR as string, 'users/', req.userId as string);
+
+			if (!fs.existsSync(folder)) {
+				fs.mkdirSync(folder, { recursive: true });
+			}
+
+			cb(null, folder);
+
+		} else {
+			if (req.baseUrl.includes('pets')) {
+				folder = 'pets';
+				cb(null, process.env.IMAGES_DIR as string + folder);
+			}
+		}
+
 	},
-	filename: (_, file, cb) => {
-		cb(null, Date.now() + String(Math.floor(Math.random() * 1000)) + path.extname(file.originalname));
+	filename: (req, file, cb) => {
+
+		cb(null, `${req.userId}.${Date.now()}.${req.uuid + path.extname(file.originalname)}`);
 	}
 });
 

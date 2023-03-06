@@ -4,6 +4,13 @@ import jwt from 'jsonwebtoken';
 import User, { UserInterface } from '../models/User';
 import logger from './logger';
 
+declare module 'express' {
+	interface Request {
+		userId?: string;
+	}
+}
+
+
 export const authUserByToken = async (req: Request, res: Response, next: NextFunction) => {
 
 	const authorization = req.headers.authorization;
@@ -23,6 +30,8 @@ export const authUserByToken = async (req: Request, res: Response, next: NextFun
 		if (!user) {
 			return res.status(400).json({ message: 'User not found' });
 		}
+
+		req.userId = user.id;
 
 		return next();
 

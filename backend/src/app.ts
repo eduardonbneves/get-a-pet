@@ -26,7 +26,7 @@ export class App {
 		this.express = express();
 		this.redisClient = createClient({
 			url: process.env.REDIS_URL || 'redis://localhost:6379',
-			name: 'refresh-token'
+			name: 'cache'
 		});
 		this.redis();
 		this.database();
