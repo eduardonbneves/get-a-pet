@@ -92,6 +92,7 @@ export async function validatePetFields(pet: Request['body'], uuidReq: string, p
 
 	} else {
 
+		// best method of delete unlink images
 		const petImages = await Pet.findById(petToCompare?.id).select('images');
 		const imagesToExclude = petImages?.images;
 

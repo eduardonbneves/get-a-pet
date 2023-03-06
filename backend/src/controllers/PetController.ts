@@ -26,9 +26,11 @@ class PetController {
 		// validations
 		const errorResponse = await validatePetFields(pet, req.uuid as string) as [];
 
-		if (errorResponse.length !== 0) {
+		if ('errors' in errorResponse)
 			return res.status(422).json({ errors: errorResponse });
-		}
+
+		if (pet.images?.length === 0)
+			return res.status(422).json({ message: 'Required: image' });
 
 		// get pet owner
 		const user = await getUserByToken(req.headers.authorization as string);
@@ -145,7 +147,7 @@ class PetController {
 
 		const dirPath = `${process.env.IMAGES_DIR}pets/`;
 
-		pet.images.forEach(image => {
+		pet.images.forEach((image: string) => {
 			fs.unlink(dirPath + image, error => {
 				if (error) {
 					logger.error(error);
