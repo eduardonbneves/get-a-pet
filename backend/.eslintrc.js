@@ -29,6 +29,7 @@ module.exports = {
     "semi-spacing": ["error", { "after": true }],
     "comma-spacing": ["error", { "after": true }],
     "no-console": "error",
+    "eol-last": ["error", "always"]*,
     'import-helpers/order-imports': [
       "warn",
       {

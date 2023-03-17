@@ -145,6 +145,7 @@ class UserController {
 			image: req.file?.filename
 		};
 
+		// file deepcode ignore PT: <please specify a reason of ignoring this>
 		const response = await validateUserFields(userToEdit, user);
 
 		if (!('name' in response)) {

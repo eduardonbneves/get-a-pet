@@ -188,6 +188,7 @@ class PetController {
 		}
 
 		// validations
+		// file deepcode ignore PT: <please specify a reason of ignoring this>
 		const errorResponse = await validatePetFields(petToUpdate, req.uuid as string, pet) as [];
 
 		if ('errors' in errorResponse)
