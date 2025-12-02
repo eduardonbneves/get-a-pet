@@ -60,6 +60,6 @@
 		"redis": "^4.6.5",
 		"swagger-ui-express": "^4.6.1",
 		"uuid": "^9.0.0",
-		"validator": "^13.9.0"
+		"validator": "^13.15.22"
 	}
 }
